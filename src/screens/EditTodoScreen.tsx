@@ -1,9 +1,8 @@
-// src/screens/EditTodoScreen.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '../app/store';
-import { updateTodoAsync } from '../features/todos/todoSlice';
+import { updateTodoAsync } from '../slices/todoSlice';
 import { useAppDispatch } from '../app/hooks';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 

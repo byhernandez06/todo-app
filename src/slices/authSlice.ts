@@ -22,18 +22,20 @@ const initialState: AuthState = {
     error: null,
 };
 
+const API_URL = 'http://localhost:3000/auth';
+
 
 export const initializeAuthState = createAsyncThunk(
     'auth/initializeAuthState',
     async (token: string | null, thunkAPI) => {
         if (token) {
             try {
-                const response = await axios.get('http://localhost:3000/auth/validate', {
+                const response = await axios.get(`${API_URL}/validate`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                // Handle response if needed
+
                 return { token, user: response.data.user };
             } catch (error) {
                 return thunkAPI.rejectWithValue('Invalid token');
@@ -43,7 +45,7 @@ export const initializeAuthState = createAsyncThunk(
     }
 );
 
-// Función para guardar el token en AsyncStorage
+
 const saveTokenToStorage = async (token: string) => {
     try {
         await AsyncStorage.setItem('userToken', token);
@@ -52,32 +54,18 @@ const saveTokenToStorage = async (token: string) => {
     }
 };
 
-// Función para recuperar el token de AsyncStorage
-const getTokenFromStorage = async () => {
-    try {
-        const token = await AsyncStorage.getItem('userToken');
-        return token;
-    } catch (error) {
-        console.error('Error retrieving token from storage', error);
-        return null;
-    }
-};
-
 export const loginUser = createAsyncThunk(
     'auth/loginUser',
     async (credentials: { email: string; password: string }, thunkAPI) => {
         try {
-            const response = await axios.post('http://localhost:3000/auth/login', credentials);
-            console.log('Login response: ', response)
+            const response = await axios.post(`${API_URL}/login`, credentials);
             await saveTokenToStorage(response.data.token);
             return response.data;
         } catch (error) {
-            console.log('Login Response: ', error)
-            // Comprobamos si el error es de Axios y tiene respuesta
             if (axios.isAxiosError(error) && error.response) {
                 return thunkAPI.rejectWithValue(error.response.data.message || 'An unknown error occurred');
             }
-            // Si el error no es de Axios, manejamos el error desconocido
+
             return thunkAPI.rejectWithValue('An unknown error occurred');
         }
     }
@@ -87,18 +75,16 @@ export const registerUser = createAsyncThunk(
     'auth/registerUser',
     async (credentials: { fullName: string; email: string; password: string }, thunkAPI) => {
         try {
-            console.log('Before register: ', credentials)
-            const response = await axios.post('http://localhost:3000/auth/register', credentials);
-            console.log('Register response: ', response)
+            const response = await axios.post(`${API_URL}/register`, credentials);
+            
             await saveTokenToStorage(response.data.token);
             return response.data;
         } catch (error) {
-            console.log('Register Response: ', error)
-            // Comprobamos si el error es de Axios y tiene respuesta
+
             if (axios.isAxiosError(error) && error.response) {
                 return thunkAPI.rejectWithValue(error.response.data.message || 'An unknown error occurred');
             }
-            // Si el error no es de Axios, manejamos el error desconocido
+
             return thunkAPI.rejectWithValue('An unknown error occurred');
         }
     }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, ReactNode } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,7 +14,11 @@ import type { AppDispatch } from './app/store';
 
 const Stack = createNativeStackNavigator();
 
-const AppInitializer: React.FC = () => {
+interface AppInitializerProps {
+    children?: ReactNode;
+}
+
+const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     const dispatch: AppDispatch = useDispatch();
     const { token } = useAppSelector((state: RootState) => state.auth);
     const [isLoading, setIsLoading] = useState(true);
@@ -46,6 +50,7 @@ const AppInitializer: React.FC = () => {
                     <Stack.Screen name="Auth" component={AuthNavigator} />
                 )}
             </Stack.Navigator>
+            {children}
         </NavigationContainer>
     );
 };

@@ -6,27 +6,48 @@ import { loginUser } from '../slices/authSlice';
 import { RootState, AppDispatch } from '../app/store';
 import type { LoginScreenNavigationProp } from '../types';
 
-// type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
-
-// interface Props {
-//     navigation: LoginScreenNavigationProp;
-// }
-
 const LoginScreen: React.FC = () => {
     const navigation = useNavigation<LoginScreenNavigationProp>();
 
-    const [email, setEmail] = useState('byronh3@example.com');
-    const [password, setPassword] = useState('1234');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [inputError, setInputError] = useState('');
     const dispatch = useDispatch<AppDispatch>();
     const { loading, error } = useSelector((state: RootState) => state.auth);
 
     const handleLogin = async () => {
+        setEmailError('');
+        setInputError('');
+
+        if (!email || !password) {
+            setInputError('Please fill in all fields.');
+            return;
+        }
+
+        if (!validateEmail(email)) {
+            setEmailError('Invalid email address.');
+            return;
+        }
+
         try {
             await dispatch(loginUser({ email, password })).unwrap();
-            navigation.navigate('TodoList');
+            navigation.navigate('Tabs');
         } catch (error) {
             console.error('Login failed:', error);
         }
+    };
+
+    const handleEmailChange = (text: string) => {
+        setEmail(text.toLowerCase());
+        if (emailError) {
+            setEmailError('');
+        }
+    };
+
+    const validateEmail = (email: string) => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
     };
 
     return (
@@ -35,8 +56,11 @@ const LoginScreen: React.FC = () => {
                 style={styles.input}
                 placeholder="Email"
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={handleEmailChange}
+                autoCapitalize="none"
+                keyboardType="email-address"
             />
+            {emailError ? <Text style={styles.error}>{emailError}</Text> : null}
             <TextInput
                 style={styles.input}
                 placeholder="Password"
@@ -44,10 +68,10 @@ const LoginScreen: React.FC = () => {
                 value={password}
                 onChangeText={setPassword}
             />
+            {inputError ? <Text style={styles.error}>{inputError}</Text> : null}
             <Button title="Login" onPress={handleLogin} disabled={loading} />
             {loading && <ActivityIndicator size="large" color="#0000ff" />}
-            {error && <Text style={styles.error}>{error}</Text>}
-
+            {error && !inputError && !emailError ? <Text style={styles.error}>{error}</Text> : null}
             <Button
                 title="Sign Up"
                 onPress={() => navigation.navigate('Register')}
